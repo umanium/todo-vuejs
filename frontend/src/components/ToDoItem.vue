@@ -5,12 +5,12 @@ import ToDoItemEditForm from "./ToDoItemEditForm";
     <div class="custom-checkbox">
       <input
         type="checkbox"
-        :id="id"
+        :id="componentId"
         :checked="isDone"
         class="checkbox"
         @change="$emit('checkbox-changed')"
       />
-      <label :for="id" class="checkbox-label">{{ label }}</label>
+      <label :for="componentId" class="checkbox-label">{{ label }}</label>
     </div>
     <div class="btn-group">
       <button type="button" class="btn" @click="toggleToItemEditForm" ref="editButton">
@@ -46,6 +46,9 @@ export default {
   computed: {
     isDone() {
       return this.done
+    },
+    componentId() {
+      return 'todo-' + this.id
     },
   },
   methods: {

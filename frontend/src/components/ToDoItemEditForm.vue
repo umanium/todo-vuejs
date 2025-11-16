@@ -3,7 +3,7 @@
     <div>
       <label class="edit-label">Edit Name for &quot;{{ label }}&quot;</label>
       <input
-        :id="id"
+        :id="componentId"
         type="text"
         autocomplete="off"
         v-model.lazy.trim="newLabel"
@@ -36,6 +36,11 @@ export default {
     return {
       newLabel: this.label,
     }
+  },
+  computed: {
+    componentId() {
+      return 'todo-' + this.id
+    },
   },
   methods: {
     onSubmit() {
