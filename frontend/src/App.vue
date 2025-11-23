@@ -1,7 +1,6 @@
 <script>
 import ToDoItem from './components/ToDoItem.vue'
 import ToDoForm from './components/ToDoForm.vue'
-import { nanoid } from 'nanoid'
 import axios from 'axios'
 
 export default {
@@ -16,26 +15,29 @@ export default {
     }
   },
   async created() {
-    const response = await axios.get('http://localhost:3001/data')
-    this.ToDoItems = JSON.parse(response.data)
+    this.getToDo()
   },
   methods: {
-    addToDo(toDoLabel) {
-      this.ToDoItems.push({
-        id: `todo-${nanoid()}`,
-        label: toDoLabel,
-        done: false,
-      })
+    async getToDo() {
+      const response = await axios.get('http://localhost:3001/todo')
+      this.ToDoItems = JSON.parse(response.data)
+    },
+    async addToDo(toDoLabel) {
+      await axios.put('http://localhost:3001/todo', { label: toDoLabel })
+
+      this.getToDo()
       console.log('to-do added:', toDoLabel)
     },
     updateDoneStatus(toDoId) {
       const toDoToUpdate = this.ToDoItems.find((item) => item.id === toDoId)
       toDoToUpdate.done = !toDoToUpdate.done
     },
-    deleteToDo(toDoId) {
-      const itemIndex = this.ToDoItems.findIndex((item) => item.id === toDoId)
-      this.ToDoItems.splice(itemIndex, 1)
+    async deleteToDo(toDoId) {
+      await axios.delete('http://localhost:3001/todo', { data: { id: toDoId } })
+
+      this.getToDo()
       this.$refs.listSummary.focus()
+      console.log('to-do deleted:', toDoId)
     },
     editToDo(toDoId, newLabel) {
       const toDoToEdit = this.ToDoItems.find((item) => item.id === toDoId)

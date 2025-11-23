@@ -25,15 +25,10 @@ describe "$CLASS" => sub {
         unlink($db_file) or die "Can't delete $db_file: $!\n";
     };
 
-    tests 'get_all' => sub {
+    tests 'insert then get_all' => sub {
         # insert data to db
-        my $insert_sql = <<EOF;
-INSERT INTO todo(label) VALUES ('test1'), ('test2')
-EOF
-        my $dbh = DBI->connect("dbi:SQLite:dbname=$db_file","","");
-        $dbh->do($insert_sql);
-
-        $dbh->disconnect();
+        Todo->insert($db_file, 'test1');
+        Todo->insert($db_file, 'test2');
 
         my @expected = (
             { id => 1, label => 'test1', done => 0 },
@@ -45,6 +40,36 @@ EOF
         is(scalar @actual, scalar @expected, 'The result count is right');
         is($actual[0], $expected[0], 'The actual is the same as expected (0)');
         is($actual[1], $expected[1], 'The actual is the same as expected (1)');
+    };
+
+    tests 'insert failed if there\'s no label' => sub {
+        ok(dies { Todo->insert($db_file) }, 'exception thrown for insert if no label supplied');
+    };
+
+    tests 'delete failed if there\'s no id' => sub {
+        ok(dies { Todo->delete($db_file) }, 'exception thrown for delete if no id supplied');
+    };
+
+    tests 'insert, delete, then get_not_deleted' => sub {
+        # insert data to db
+        Todo->insert($db_file, 'test1');
+        Todo->insert($db_file, 'test2');
+
+        # delete from db
+        Todo->delete($db_file, 1);
+
+        my @expected = (
+            { id => 2, label => 'test2', done => 0 }
+        );
+
+        my @all = Todo->get_all($db_file);
+
+        is(scalar @all, 2, 'All data should be still 2');
+
+        my @actual = Todo->get_not_deleted($db_file);
+
+        is(scalar @actual, scalar @expected, 'The result count is right');
+        is($actual[0], $expected[0], 'The actual is the same as expected (0)');
     };
 
     after_each many => sub { 
