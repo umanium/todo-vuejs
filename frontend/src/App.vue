@@ -26,22 +26,26 @@ export default {
       await axios.put('http://localhost:3001/todo', { label: toDoLabel })
 
       this.getToDo()
-      console.log('to-do added:', toDoLabel)
     },
-    updateDoneStatus(toDoId) {
+    async updateDoneStatus(toDoId) {
       const toDoToUpdate = this.ToDoItems.find((item) => item.id === toDoId)
-      toDoToUpdate.done = !toDoToUpdate.done
+
+      const toDoData = { id: toDoId, done: +!toDoToUpdate.done }
+      await axios.post('http://localhost:3001/todo', toDoData)
+
+      this.getToDo()
     },
     async deleteToDo(toDoId) {
       await axios.delete('http://localhost:3001/todo', { data: { id: toDoId } })
 
       this.getToDo()
       this.$refs.listSummary.focus()
-      console.log('to-do deleted:', toDoId)
     },
-    editToDo(toDoId, newLabel) {
-      const toDoToEdit = this.ToDoItems.find((item) => item.id === toDoId)
-      toDoToEdit.label = newLabel
+    async editToDo(toDoId, newLabel) {
+      const toDoData = { id: toDoId, label: newLabel }
+      await axios.post('http://localhost:3001/todo', toDoData)
+
+      this.getToDo()
     },
   },
   computed: {

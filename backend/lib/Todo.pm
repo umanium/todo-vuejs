@@ -70,8 +70,38 @@ sub delete {
     my $dbh = DBI->connect("dbi:SQLite:dbname=$db_file","","");
 
     # create a statement, then insert to db
-    my $sth = $dbh->prepare('UPDATE todo SET deleted_at=CURRENT_TIMESTAMP WHERE id=?');
+    my $sth = $dbh->prepare('UPDATE todo SET deleted_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP WHERE id=?');
     $sth->execute($id);
+
+    $dbh->disconnect();
+}
+
+sub update {
+    my ($self, $db_file, $paramsRef) = @_;
+    my %params = %{$paramsRef};
+    
+    my $id = $params{id};
+    if(!$id) { die 'no id supplied for update' }
+
+    delete $params{id};
+
+    my @updateValues;
+    my @updateKeys;
+
+    foreach (keys %params) {
+        push(@updateKeys, "$_ = ?");
+        push(@updateValues, $params{$_});
+    }
+    push(@updateValues, $id);
+
+    if (scalar @updateKeys == 0) { die 'no values supplied for update' }
+
+    my $dbh = DBI->connect("dbi:SQLite:dbname=$db_file","","");
+
+    # create a statement, then insert to db
+    my $updateKeysStr = join(', ',  @updateKeys);
+    my $sth = $dbh->prepare("UPDATE todo SET $updateKeysStr, updated_at=CURRENT_TIMESTAMP WHERE id=?");
+    $sth->execute(@updateValues);
 
     $dbh->disconnect();
 }

@@ -72,6 +72,32 @@ describe "$CLASS" => sub {
         is($actual[0], $expected[0], 'The actual is the same as expected (0)');
     };
 
+    tests 'update data' => sub {
+        # insert data to db
+        Todo->insert($db_file, 'test1');
+        Todo->insert($db_file, 'test2');
+
+        # update data
+        Todo->update($db_file, ({ id => 1, label => 'test1edit' }));
+        Todo->update($db_file, ({ id => 2, label => 'test2yes', done => 1 }));
+
+        my @expected = (
+            { id => 1, label => 'test1edit', done => 0 },
+            { id => 2, label => 'test2yes', done => 1 }
+        );
+
+        my @actual = Todo->get_all($db_file);
+
+        is(scalar @actual, scalar @expected, 'The result count is right');
+        is($actual[0], $expected[0], 'The actual is the same as expected (0)');
+        is($actual[1], $expected[1], 'The actual is the same as expected (1)');
+    };
+
+    tests 'update failed' => sub {
+        ok(dies { Todo->update($db_file, ({ label => 'test1edit', done => 1 })) }, 'exception thrown for update if no id supplied');
+        ok(dies { Todo->update($db_file, ({ id => 10 })) }, 'exception thrown for update if only id supplied');
+    };
+
     after_each many => sub { 
         my $dbh = DBI->connect("dbi:SQLite:dbname=$db_file","","");
         $dbh->do("DELETE FROM todo");

@@ -28,6 +28,13 @@ del '/todo' => sub ($c) {
   $c->render(json => {success => 1});
 };
 
+post '/todo' => sub ($c) {
+  my $input = $c->req->json;
+
+  Todo->update($db_path, $input);
+  $c->render(json => {success => 1});
+};
+
 options '/todo' => sub ($c) {
   $c->render(data => '');
 };
